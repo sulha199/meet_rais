@@ -57,3 +57,11 @@ function current_posts_contents(){
     ->execute(); 
   return $query;  
 }
+
+function current_posts_block_view($delta = '') {
+  switch ($delta) {
+    case 'blockgenerator':
+      $block['subject'] = t('Current posts');
+      if (user_access('access content')) {
+      // Retrieve and process data here.
+   } 
