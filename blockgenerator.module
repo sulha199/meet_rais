@@ -16,7 +16,17 @@
 			return '' . t("Displays links to nodes created on this date") . '';
 			break;
 		}
-	} 
+	}
+
+	function blockgenerator_block_list_alter(&$blocks) {
+  		if ($_SESSION['smart_ip']['location']['country_code'] == 'AU') {
+    		foreach ($blocks as $key => $block) {
+				  if (!isset($block->visibility) || $block->visibility <= 0) {
+        			unset($blocks[$key]);
+      			}
+    		}
+  		}
+	}
 	
 	/**
 		* Implements hook_block_info().
