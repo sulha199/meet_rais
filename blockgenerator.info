@@ -3,5 +3,6 @@ description = Enable country based visibility option in the block configuration
 core = 7.x
 ;package = Z Modules
 dependencies[] = smart_ip:smart_ip
+dependencies[] = block:block
 
 ;configure = admin/config/content/blockgenerator 
