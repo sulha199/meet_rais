@@ -178,10 +178,16 @@
 	/**
 		* Implements hook_block_configure().
 	*/
-			
-		//extended_block_visibility_form_block_admin_configure_alter(&$form, &$form_state, $form_id) {
+	
+	//extended_block_visibility_form_block_admin_configure_alter(&$form, &$form_state, $form_id) {
 	function blockgenerator_form_block_admin_configure_alter(&$form, &$form_state, $form_id) {
 		//$form = block_admin_configure($form, $form_state, $module, $delta); 
+		$delta = $form['delta']['#value'];
+		
+		$block_country = db_select('block_generator','b')
+		->fields('b')
+		->condition('delta', $delta)
+		->execute()->fetch();
 		
 		$form['visibility']['country']= array(
 		'#type' => 'fieldset',
@@ -192,20 +198,22 @@
 		'#weight' => 20,
 		);
 		
-		$form['visibility']['country']['allowed_country1'] = array(
+		$form['visibility']['country']['allowed_countries'] = array(
 		'#type' => 'textfield',
 		'#title' => t('Allowed Country'),    
-		'#description' => t('Limit to the listed Countries that is able to view the block. If empty, all countries except the not allowed can view the block.'),
-		'#default_value' => '',
+		'#description' => t('Limit to the listed Countries that are able to view the block. If empty, all countries except the not allowed can view the block. Write the country code and separate each country by space. Ex : US CA AU'),
+		'#default_value' => isset($block_country->allowed_countries)?$block_country->allowed_countries:'',
 		);
 		
-		$form['visibility']['country']['not_allowed_country1'] = array(
+		$form['visibility']['country']['notallowed_countries'] = array(
 		'#type' => 'textfield',
 		'#title' => t('Not Allowed Country'),    
-		'#description' => t('Hide the block to the listed Countries.'),
-		'#default_value' => '',
-		);
+		'#description' => t('Hide the block to the listed Countries. Write the country code and separate each country by space. Ex : US CA AU'),
+		'#default_value' => isset($block_country->notallowed_countries)?$block_country->notallowed_countries:'',
+		);		
 		
+		// attach function to submit handler
+		$form['#submit'][] = 'blockgenerator_form_block_admin_configure_submit_alter';
 		//return $form;
 	}	
 	
@@ -221,19 +229,86 @@
 		'#weight' => 20,
 		);
 		
-		$form['visibility']['country']['allowed_country1'] = array(
+		$form['visibility']['country']['allowed_countries'] = array(
 		'#type' => 'textfield',
 		'#title' => t('Allowed Country'),    
-		'#description' => t('Limit to the listed Countries that is able to view the block. If empty, all countries except the not allowed can view the block.'),
+		'#description' => t('Limit to the listed Countries that are able to view the block. If empty, all countries except the not allowed can view the block. Write the country code and separate each country by space. Ex : US CA AU'),
 		'#default_value' => '',
 		);
 		
-		$form['visibility']['country']['not_allowed_country1'] = array(
+		$form['visibility']['country']['notallowed_countries'] = array(
 		'#type' => 'textfield',
 		'#title' => t('Not Allowed Country'),    
-		'#description' => t('Hide the block to the listed Countries.'),
+		'#description' => t('Hide the block to the listed Countries. Write the country code and separate each country by space. Ex : US CA AU'),
 		'#default_value' => '',
 		);
 		
+		// attach function to submit handler
+		$form['#submit'][] = 'blockgenerator_form_block_add_block_form_submit_alter';
 		//return $form;
 	}
+	
+	function blockgenerator_form_block_admin_configure_submit_alter(&$form, &$form_state) {
+	
+		// check if config is already exist
+		$query = db_select('block_generator','b')
+		->fields('b')
+		->condition('delta', $form_state['values']['delta'])
+		->execute()->fetchAssoc();
+		
+		// if related data exist then update otherwise insert new data
+		if (is_array($query)){
+			db_update('block_generator')
+			->fields(array(
+			'allowed_countries' => $form_state['values']['allowed_countries'],
+			'notallowed_countries' => $form_state['values']['notallowed_countries'],
+			))
+			->condition('delta', $form_state['values']['delta'])
+			->execute();
+		}
+		else{
+			db_insert('block_generator')
+			->fields(array(
+			'allowed_countries' => $form_state['values']['allowed_countries'],
+			'notallowed_countries' => $form_state['values']['notallowed_countries'],
+			'delta' => $form_state['values']['delta'],
+			))				
+			->execute();
+		}
+		
+	}
+	
+	function blockgenerator_form_block_add_block_form_submit_alter(&$form, &$form_state) {	
+	
+		// check if config is already exist
+		$query = db_select('block_generator','b')
+		->fields('b')
+		->condition('delta', $form_state['values']['delta'])
+		->execute()->fetchAssoc();
+		
+		// if related data exist then update otherwise insert new data
+		if (is_array($query)){
+			db_update('block_generator')
+			->fields(array(
+			'allowed_countries' => $form_state['values']['allowed_countries'],
+			'notallowed_countries' => $form_state['values']['notallowed_countries'],
+			))
+			->condition('delta', $form_state['values']['delta'])
+			->execute();
+		}
+		else{
+			db_insert('block_generator')
+			->fields(array(
+			'allowed_countries' => $form_state['values']['allowed_countries'],
+			'notallowed_countries' => $form_state['values']['notallowed_countries'],
+			'delta' => $form_state['values']['delta'],
+			))				
+			->execute();
+		}
+	}	
+	
+	function blockgenerator_form_block_custom_block_delete_submit_alter(&$form, &$form_state) {		
+		db_delete('block_generator')		
+		->condition('delta', $form_state['values']['bid'])
+		->execute();
+	}	
