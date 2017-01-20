@@ -1,6 +1,7 @@
-name = Block Generator Trial
-description = Description of what this module does
+name = Block Visibility by Country
+description = Enable country based visibility option in the block configuration
 core = 7.x
-package = Z Modules
+;package = Z Modules
+dependencies[] = smart_ip:smart_ip
 
-configure = admin/config/content/blockgenerator
+;configure = admin/config/content/blockgenerator
