@@ -18,14 +18,39 @@
 		}
 	}
 
+	/**
+		* Implements hook_block_list_alter().
+	*/
 	function blockgenerator_block_list_alter(&$blocks) {
-  		if ($_SESSION['smart_ip']['location']['country_code'] == 'AU') {
-    		foreach ($blocks as $key => $block) {
-				  if (!isset($block->visibility) || $block->visibility <= 0) {
-        			unset($blocks[$key]);
-      			}
-    		}
-  		}
+		$result = db_query('SELECT delta, allowed_countries, notallowed_countries FROM block_generator');
+		$countries = array();
+		foreach ($result as $record) {
+			$country = array(
+				'allowed' => $record->allowed_countries,
+				'notallowed' => $record->notallowed_countries
+			);
+			$countries[$record->delta] = $country;
+		}
+		foreach ($blocks as $key => $block) {
+			$country_code = $_SESSION['smart_ip']['location']['country_code'];
+			if (isset($countries[$block->delta]))
+			{
+				$country_list = $countries[$block->delta];
+
+				if (strlen($country_list['allowed']) > 0)
+				{
+					if ((strpos($country_list['allowed'], $country_code) === FALSE)) {
+						unset($blocks[$key]);
+					}
+				}
+				else
+				{
+					if ((strpos($country_list['notallowed'], $country_code) !== FALSE)) {
+						unset($blocks[$key]);
+					}
+				}
+			}
+    	}
 	}
 	
 	/**
@@ -223,26 +248,26 @@
 		//$form = block_admin_configure($form, $form_state, $module, $delta); 
 		
 		$form['visibility']['country']= array(
-		'#type' => 'fieldset',
-		'#title' => t('Country'),
-		'#collapsible' => TRUE,
-		'#collapsed' => TRUE,
-		'#group' => 'visibility',
-		'#weight' => 20,
+			'#type' => 'fieldset',
+			'#title' => t('Country'),
+			'#collapsible' => TRUE,
+			'#collapsed' => TRUE,
+			'#group' => 'visibility',
+			'#weight' => 20,
 		);
 		
 		$form['visibility']['country']['allowed_country1'] = array(
-		'#type' => 'textfield',
-		'#title' => t('Allowed Country'),    
-		'#description' => t('Limit to the listed Countries that is able to view the block. If empty, all countries except the not allowed can view the block.'),
-		'#default_value' => '',
+			'#type' => 'textfield',
+			'#title' => t('Allowed Country'),    
+			'#description' => t('Limit to the listed Countries that is able to view the block. If empty, all countries except the not allowed can view the block.'),
+			'#default_value' => '',
 		);
 		
 		$form['visibility']['country']['not_allowed_country1'] = array(
-		'#type' => 'textfield',
-		'#title' => t('Not Allowed Country'),    
-		'#description' => t('Hide the block to the listed Countries.'),
-		'#default_value' => '',
+			'#type' => 'textfield',
+			'#title' => t('Not Allowed Country'),    
+			'#description' => t('Hide the block to the listed Countries.'),
+			'#default_value' => '',
 		);
 		
 		//return $form;
