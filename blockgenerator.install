@@ -9,24 +9,25 @@
 			'fields' => array(
 				// specification for block_generator
 				'delta' => array(
-				'type' => 'varchar',
-				'length' => 32,
-				'not null' => TRUE,
-				'default' => '0',
-				'description' => 'Unique ID for block within a module.',
+					'type' => 'varchar',
+					'length' => 32,
+					'not null' => TRUE,
+					'default' => '0',
+					'description' => 'Unique ID for block within a module.',
 				),
 				'allowed_countries' => array(		
-				'type' => 'text',
-				'not null' => false,
-				'description' => 'Contain the listed Countries code separated by space that are able to view the block. If empty, all countries except the not allowed can view the block.'
+					'type' => 'text',
+					'size' => 'normal',
+					'not null' => false,
+					'description' => 'Contain the listed Countries code separated by space that are able to view the block. If empty, all countries except the not allowed can view the block.'
 				),
 				'notallowed_countries' => array(		
-				'type' => 'text',
-				'not null' => false,
-				'description' => 'Contain the listed Countries code separated by space that are not able to view the block.'
-				)
-			),
-			
+					'type' => 'text',
+					'size' => 'normal',
+					'not null' => false,
+					'description' => 'Contain the listed Countries code separated by space that are not able to view the block.'
+				),
+			),			
 			'primary key' => array('delta'),
 		);
 		
