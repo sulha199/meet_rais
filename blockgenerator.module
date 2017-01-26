@@ -19,40 +19,135 @@
 	}
 
 	/**
+ 	* Implements hook_variable_info().
+ 	*/
+	 //function blockgenerator_variable_info($options) {
+  	 //	// This is the very minimum we need, some descriptive name.
+  	 //	$variable['blockgenerator_last_location'] = array(
+     	//	'title' => t('My variable'),
+  	 //	);
+	 //}
+
+	//  function blockgenerator_init() {
+	//  	drupal_page_is_cacheable(FALSE);
+	//  }
+
+	function blockgenerator_menu() {
+    	$items['blockgenerator/get/country'] = array(
+      		'page callback' => 'blockgenerator_get_country',
+			'access callback' => TRUE
+    	);
+    	return $items;
+  	}
+
+	  function blockgenerator_get_country() {
+		  $geolocation = smart_ip_get_location(ip_address());
+		  drupal_json_output($geolocation);
+    	drupal_exit();
+	  }
+
+	// function blockgenerator_boot() {
+	// 	include_once(DRUPAL_ROOT."/includes/file.inc");
+	// 	include_once(DRUPAL_ROOT."/includes/cache.inc");
+	// 	drupal_load('module', 'smart_ip');
+	// 	include_once(DRUPAL_ROOT."/sites/all/modules/smart_ip/includes/geoip.inc");
+	// 	include_once(DRUPAL_ROOT."/sites/all/modules/smart_ip/includes/geoipcity.inc");
+	// 	$geolocation = smart_ip_get_location(ip_address());
+	// 	$last_session = cache_get('location_cache', 'cache');
+	// 	drupal_page_is_cacheable(FALSE);
+	// 	if (isset($last_session)) {
+	// 		if ($last_session['country_code'] != $geolocation['country_code']) {
+  	// 			cache_clear_all();
+	// 			cache_set('location_cache', $geolocation, 'cache');
+	// 			drupal_page_is_cacheable(FALSE);
+	// 		}
+	// 	}
+	// }
+
+
+	/**
 		* Implements hook_block_list_alter().
 	*/
-	function blockgenerator_block_list_alter(&$blocks) {
-		$result = db_query('SELECT delta, allowed_countries, notallowed_countries FROM block_generator');
-		$countries = array();
-		foreach ($result as $record) {
-			$country = array(
-				'allowed' => $record->allowed_countries,
-				'notallowed' => $record->notallowed_countries
-			);
-			$countries[$record->delta] = $country;
-		}
-		foreach ($blocks as $key => $block) {
-			$country_code = $_SESSION['smart_ip']['location']['country_code'];
-			if (isset($countries[$block->delta]))
-			{
-				$country_list = $countries[$block->delta];
+	// function blockgenerator_block_list_alter(&$blocks) {
+	// 	$result = db_query('SELECT delta, allowed_countries, notallowed_countries FROM block_generator');
+	// 	$countries = array();
+	// 	foreach ($result as $record) {
+	// 		$country = array(
+	// 			'allowed' => $record->allowed_countries,
+	// 			'notallowed' => $record->notallowed_countries
+	// 		);
+	// 		if (!empty($country['allowed']) || !empty($country['notallowed']))
+	// 			$countries[$record->delta] = $country;
+	// 	}
+	// 	$country_code = $_SESSION['smart_ip']['location']['country_code'];
+	// 	foreach ($blocks as $key => $block) {
+	// 		if (isset($countries[$block->delta]))
+	// 		{
+	// 			$country_list = $countries[$block->delta];
 
-				if (strlen($country_list['allowed']) > 0)
-				{
-					if ((strpos($country_list['allowed'], $country_code) === FALSE)) {
-						unset($blocks[$key]);
-					}
-				}
-				else
-				{
-					if ((strpos($country_list['notallowed'], $country_code) !== FALSE)) {
-						unset($blocks[$key]);
-					}
+	// 			if (strlen($country_list['allowed']) > 0)
+	// 			{
+	// 				if ((strpos($country_list['allowed'], $country_code) === FALSE)) {
+	// 					unset($blocks[$key]);
+	// 				}
+	// 			}
+	// 			else
+	// 			{
+	// 				if ((strpos($country_list['notallowed'], $country_code) !== FALSE)) {
+	// 					unset($blocks[$key]);
+	// 				}
+	// 			}
+	// 		}
+    // 	}
+	// }
+
+	function blockgenerator_preprocess_page(&$vars, $hook) {
+		drupal_add_js(drupal_get_path('module', 'blockgenerator') . '/blockgenerator.js');
+    	$vars['scripts'] = drupal_get_js(); // necessary in D7?
+  	}
+
+/**
+ * Implements hook_preprocess_block()
+ */
+	function blockgenerator_preprocess_block(&$vars) {		
+		$delta = $vars['block']->delta;
+		$result = db_select('block_generator','b')
+		->fields('b')
+		->condition('delta', $delta)
+		->execute()->fetch();		
+		$classes = &$vars['classes_array'];
+
+		if (!empty($result)) {
+			if (strlen($result->allowed_countries) > 0)
+			{
+				$classes[] = 'element-invisible';
+				$classes[] = 'hide_all';
+				$allow_list = explode(' ', $result->allowed_countries);
+				foreach ($allow_list as $item) {
+					$classes[] = 'allow_'.$item;
 				}
 			}
-    	}
-	}
-					
+			else if (strlen($result->notallowed_countries) > 0)
+			{
+				$classes[] = 'element-invisible';
+				$classes[] = 'allow_all';
+				$notallow_list = explode(' ', $result->notallowed_countries);
+				foreach ($notallow_list as $item) {
+					$classes[] = 'hide_'.$item;
+				}
+			}
+		}
+
+		// if (strlen($result->allowed_countries)>0 && strpos($result->allowed_countries,$country_code) === FALSE)
+		// {
+		// 	 $classes[] = 'element-invisible';
+		// }
+		// else if (strlen($result->notallowed_countries)>0 && strpos($result->notallowed_countries,$country_code) !== FALSE)
+		// {
+		// 	 $classes[] = 'element-invisible';
+		// }
+	} 
+	
 	/**
 	 * Implements hook_form_FORM_ID_alter() to alter block_admin_configure from block module.
 	 */	
@@ -193,4 +288,4 @@
 		db_delete('block_generator')		
 		->condition('delta', $form_state['values']['bid'])
 		->execute();
-	}	
+	}
