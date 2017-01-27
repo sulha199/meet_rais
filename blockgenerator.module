@@ -18,20 +18,9 @@
 		}
 	}
 
-	/**
- 	* Implements hook_variable_info().
- 	*/
-	 //function blockgenerator_variable_info($options) {
-  	 //	// This is the very minimum we need, some descriptive name.
-  	 //	$variable['blockgenerator_last_location'] = array(
-     	//	'title' => t('My variable'),
-  	 //	);
-	 //}
-
-	//  function blockgenerator_init() {
-	//  	drupal_page_is_cacheable(FALSE);
-	//  }
-
+/**
+ * Implements hook_menu()
+ */
 	function blockgenerator_menu() {
     	$items['blockgenerator/get/country'] = array(
       		'page callback' => 'blockgenerator_get_country',
@@ -46,61 +35,10 @@
     	drupal_exit();
 	  }
 
-	// function blockgenerator_boot() {
-	// 	include_once(DRUPAL_ROOT."/includes/file.inc");
-	// 	include_once(DRUPAL_ROOT."/includes/cache.inc");
-	// 	drupal_load('module', 'smart_ip');
-	// 	include_once(DRUPAL_ROOT."/sites/all/modules/smart_ip/includes/geoip.inc");
-	// 	include_once(DRUPAL_ROOT."/sites/all/modules/smart_ip/includes/geoipcity.inc");
-	// 	$geolocation = smart_ip_get_location(ip_address());
-	// 	$last_session = cache_get('location_cache', 'cache');
-	// 	drupal_page_is_cacheable(FALSE);
-	// 	if (isset($last_session)) {
-	// 		if ($last_session['country_code'] != $geolocation['country_code']) {
-  	// 			cache_clear_all();
-	// 			cache_set('location_cache', $geolocation, 'cache');
-	// 			drupal_page_is_cacheable(FALSE);
-	// 		}
-	// 	}
-	// }
 
-
-	/**
-		* Implements hook_block_list_alter().
-	*/
-	// function blockgenerator_block_list_alter(&$blocks) {
-	// 	$result = db_query('SELECT delta, allowed_countries, notallowed_countries FROM block_generator');
-	// 	$countries = array();
-	// 	foreach ($result as $record) {
-	// 		$country = array(
-	// 			'allowed' => $record->allowed_countries,
-	// 			'notallowed' => $record->notallowed_countries
-	// 		);
-	// 		if (!empty($country['allowed']) || !empty($country['notallowed']))
-	// 			$countries[$record->delta] = $country;
-	// 	}
-	// 	$country_code = $_SESSION['smart_ip']['location']['country_code'];
-	// 	foreach ($blocks as $key => $block) {
-	// 		if (isset($countries[$block->delta]))
-	// 		{
-	// 			$country_list = $countries[$block->delta];
-
-	// 			if (strlen($country_list['allowed']) > 0)
-	// 			{
-	// 				if ((strpos($country_list['allowed'], $country_code) === FALSE)) {
-	// 					unset($blocks[$key]);
-	// 				}
-	// 			}
-	// 			else
-	// 			{
-	// 				if ((strpos($country_list['notallowed'], $country_code) !== FALSE)) {
-	// 					unset($blocks[$key]);
-	// 				}
-	// 			}
-	// 		}
-    // 	}
-	// }
-
+/**
+ * Implements hook_preprocess_page()
+ */
 	function blockgenerator_preprocess_page(&$vars, $hook) {
 		drupal_add_js(drupal_get_path('module', 'blockgenerator') . '/blockgenerator.js');
     	$vars['scripts'] = drupal_get_js(); // necessary in D7?
@@ -137,15 +75,6 @@
 				}
 			}
 		}
-
-		// if (strlen($result->allowed_countries)>0 && strpos($result->allowed_countries,$country_code) === FALSE)
-		// {
-		// 	 $classes[] = 'element-invisible';
-		// }
-		// else if (strlen($result->notallowed_countries)>0 && strpos($result->notallowed_countries,$country_code) !== FALSE)
-		// {
-		// 	 $classes[] = 'element-invisible';
-		// }
 	} 
 	
 	/**

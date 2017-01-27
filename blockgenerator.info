@@ -4,5 +4,6 @@ core = 7.x
 ;package = Z Modules
 dependencies[] = smart_ip:smart_ip
 dependencies[] = block:block
+dependencies[] = session_cache:session_cache
 
 ;configure = admin/config/content/blockgenerator 
