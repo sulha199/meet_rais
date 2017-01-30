@@ -58,7 +58,7 @@
 		if (!empty($result)) {
 			if (strlen($result->allowed_countries) > 0)
 			{
-				$classes[] = 'element-invisible';
+				$classes[] = 'element-hidden';
 				$classes[] = 'hide_all';
 				$allow_list = explode(' ', $result->allowed_countries);
 				foreach ($allow_list as $item) {
@@ -67,7 +67,7 @@
 			}
 			else if (strlen($result->notallowed_countries) > 0)
 			{
-				$classes[] = 'element-invisible';
+				$classes[] = 'element-hidden';
 				$classes[] = 'allow_all';
 				$notallow_list = explode(' ', $result->notallowed_countries);
 				foreach ($notallow_list as $item) {
